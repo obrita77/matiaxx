@@ -4,193 +4,169 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.core.window import Window
-from kivy.graphics import Color, Rectangle
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, ListProperty
 from kivy.animation import Animation
 
 class VerificadorIdadeApp(App):
     resultado_texto = StringProperty('')
-    resultado_cor = StringProperty('cinza_claro')
-    
+    historico = ListProperty([])  # Armazena o histórico de verificações
+
     def build(self):
-        # Configurar cor de fundo da janela - Azul escuro elegante
+        """Cria e organiza todos os elementos da interface gráfica."""
         Window.clearcolor = (0.1, 0.15, 0.25, 1)  # Azul escuro
-        
-        # Layout principal com alinhamento centralizado
-        layout = BoxLayout(
-            orientation='vertical', 
-            padding=30,  # Reduzido de 40 para 30
-            spacing=20,   # Reduzido de 25 para 20
-            size_hint=(0.8, 0.8),
-            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+
+        self.layout = BoxLayout(
+            orientation='vertical',
+            padding=20,
+            spacing=15,
+            size_hint=(1, 1)
         )
-        
-        # Título centralizado com cor harmoniosa
+
+        # Título
         titulo = Label(
-            font_size='26sp',  # Reduzido de 28sp para 26sp
+            text='Verificador de Idade',
+            font_size='24sp',
             bold=True,
-            color=(0.9, 0.9, 0.95, 1),  # Branco azulado
+            color=(0.9, 0.9, 0.95, 1),
             size_hint_y=None,
-            height=50,  # Reduzido de 60 para 50
-            halign='center'
+            height=50
         )
-        titulo.bind(texture_size=titulo.setter('size'))
-        
-        # Container para campos de entrada
-        campos_layout = BoxLayout(orientation='vertical', spacing=12)  # Reduzido de 15 para 12
-        
+
         # Campo para nome
-        label_nome = Label(
-            text='Nome:', 
-            font_size='15sp',  # Reduzido de 16sp para 15sp
-            color=(0.8, 0.85, 0.9, 1),  # Azul claro
-            size_hint_y=None,
-            height=25,  # Reduzido de 30 para 25
-            halign='left'
-        )
-        
         self.nome_input = TextInput(
             hint_text='Digite seu nome',
-            hint_text_color=(0.6, 0.6, 0.65, 1),
             size_hint_y=None,
-            height=45,  # Reduzido de 55 para 45
-            font_size='16sp',  # Reduzido de 17sp para 16sp
+            height=45,
+            font_size='16sp',
             background_color=(0.2, 0.25, 0.3, 1),
-            foreground_color=(0.95, 0.95, 1, 1),
-            cursor_color=(0.8, 0.8, 1, 1),
-            padding=[12, 8],  # Reduzido de [15, 10] para [12, 8]
+            foreground_color=(1, 1, 1, 1),
             multiline=False
         )
-        
+
         # Campo para idade
-        label_idade = Label(
-            text='Idade:', 
-            font_size='15sp',  # Reduzido de 16sp para 15sp
-            color=(0.8, 0.85, 0.9, 1),
-            size_hint_y=None,
-            height=25,  # Reduzido de 30 para 25
-            halign='left'
-        )
-        
         self.idade_input = TextInput(
             hint_text='Digite sua idade (0-120)',
-            hint_text_color=(0.6, 0.6, 0.65, 1),
             size_hint_y=None,
-            height=45,  # Reduzido de 55 para 45
-            font_size='16sp',  # Reduzido de 17sp para 16sp
+            height=45,
+            font_size='16sp',
             input_filter='int',
             background_color=(0.2, 0.25, 0.3, 1),
-            foreground_color=(0.95, 0.95, 1, 1),
-            cursor_color=(0.8, 0.8, 1, 1),
-            padding=[12, 8],  # Reduzido de [15, 10] para [12, 8]
+            foreground_color=(1, 1, 1, 1),
             multiline=False
         )
-        
-        # Botão de enviar com tamanho reduzido
+
+        # Botão de verificação
         enviar_btn = Button(
             text='VERIFICAR IDADE',
             size_hint_y=None,
-            height=50,  # Reduzido de 65 para 50 (diminuição significativa)
-            font_size='16sp',  # Reduzido de 18sp para 16sp
-            background_color=(0.4, 0.6, 0.8, 1),  # Azul médio
+            height=50,
+            font_size='16sp',
+            background_color=(0.4, 0.6, 0.8, 1),
             background_normal='',
-            color=(1, 1, 1, 1),  # Corrigido: (3, 5, 2, 1) para (1, 1, 1, 1)
-            bold=True,
-            padding=[15, 5]  # Reduzido de [20, 10] para [15, 5]
+            color=(1, 1, 1, 1),
+            bold=True
         )
         enviar_btn.bind(on_press=self.animar_botao)
         enviar_btn.bind(on_release=self.verificar_idade)
-        
-        # Label para resultado com ícone
+
+        # Label para resultado com emojis
         self.resultado_label = Label(
             text='',
-            font_size='17sp',  # Reduzido de 19sp para 17sp
-            color=(0.9, 0.9, 0.95, 1),
+            font_size='18sp',
+            color=(1, 1, 1, 1),
             size_hint_y=None,
-            height=100,  # Reduzido de 120 para 100
+            height=50,
             halign='center',
             valign='middle',
-            text_size=(None, None),
+            text_size=(Window.width * 0.9, None),
             markup=True
         )
-        
-        # Adicionar widgets aos layouts
-        campos_layout.add_widget(label_nome)
-        campos_layout.add_widget(self.nome_input)
-        campos_layout.add_widget(label_idade)
-        campos_layout.add_widget(self.idade_input)
-        
-        layout.add_widget(titulo)
-        layout.add_widget(campos_layout)
-        layout.add_widget(enviar_btn)
-        layout.add_widget(self.resultado_label)
-        
-        return layout
-    
+
+        # Label para histórico de verificações
+        self.historico_label = Label(
+            text='Histórico de verificações:\n',
+            font_size='15sp',
+            color=(0.9, 0.9, 0.95, 1),
+            halign='left',
+            valign='top',
+            size_hint_y=None,
+            height=200
+        )
+
+        # Adiciona widgets ao layout principal
+        self.layout.add_widget(titulo)
+        self.layout.add_widget(self.nome_input)
+        self.layout.add_widget(self.idade_input)
+        self.layout.add_widget(enviar_btn)
+        self.layout.add_widget(self.resultado_label)
+        self.layout.add_widget(self.historico_label)
+
+        return self.layout
+
     def animar_botao(self, instance):
-        """Animação de clique no botão"""
+        """Aplica animação ao botão quando pressionado."""
         anim = Animation(background_color=(0.3, 0.5, 0.7, 1), duration=0.1) + \
                Animation(background_color=(0.4, 0.6, 0.8, 1), duration=0.1)
         anim.start(instance)
-    
+
     def validar_idade(self, idade_texto):
-        """Validação centralizada da idade"""
+        """Valida se a idade fornecida é um número inteiro entre 0 e 120."""
         if not idade_texto.strip():
             return False, "Por favor, digite sua idade!"
-        
         try:
             idade = int(idade_texto)
             if idade < 0:
                 return False, "Idade não pode ser negativa!"
             if idade > 120:
-                return False, "digite uma idade válida (0-120)!"
+                return False, "Digite uma idade válida (0-120)!"
             return True, idade
         except ValueError:
             return False, "Digite apenas números para a idade!"
-    
+
     def verificar_idade(self, instance):
-        # Obter valores dos campos
+        """Verifica a faixa etária do usuário e exibe o resultado com emojis."""
         nome = self.nome_input.text.strip()
         idade_texto = self.idade_input.text.strip()
-        
-        # Validar campos obrigatórios
+
         if not nome:
-            self.exibir_resultado(" digite seu nome!", "erro")
+            self.exibir_resultado("Digite seu nome!", "erro")
             return
-        
-        # Validar idade
+
         valido, resultado = self.validar_idade(idade_texto)
         if not valido:
             self.exibir_resultado(resultado, "erro")
             return
-        
+
         idade = resultado
-        
-        # Determinar a mensagem baseada na idade
+
         if idade >= 60:
-            mensagem = f" {nome}! Você é idoso ."
+            mensagem = f"👴 {nome}, você é idoso."
             cor_tipo = "idoso"
         elif idade >= 18:
-            mensagem = f"{nome}! Você é maior de idade."
+            mensagem = f"🧑 {nome}, você é maior de idade."
             cor_tipo = "adulto"
         else:
-            mensagem = f" {nome}! Você é menor de idade."
+            mensagem = f"👦 {nome}, você é menor de idade."
             cor_tipo = "jovem"
-        
+
         self.exibir_resultado(mensagem, cor_tipo)
-    
+        self.atualizar_historico(mensagem)
+
     def exibir_resultado(self, mensagem, tipo):
-        """Exibe resultado com cores e formatação apropriadas"""
+        """Exibe o resultado da verificação com cor e ícone apropriados."""
         cores = {
-            "erro": (1, 0.6, 0.6, 1),      # Vermelho claro
-            "jovem": (1, 1, 0.8, 1),       # Amarelo claro
-            "adulto": (0.8, 1, 0.8, 1),    # Verde claro
-            "idoso": (1, 0.8, 0.9, 1),     # Rosa claro
-            "cinza_claro": (0.9, 0.9, 0.95, 1)
+            "erro": (1, 0.6, 0.6, 1),
+            "jovem": (1, 1, 0.8, 1),
+            "adulto": (0.8, 1, 0.8, 1),
+            "idoso": (1, 0.8, 0.9, 1),
         }
-        
         self.resultado_label.text = mensagem
-        self.resultado_label.color = cores.get(tipo, cores["cinza_claro"])
+        self.resultado_label.color = cores.get(tipo, (1, 1, 1, 1))
+
+    def atualizar_historico(self, mensagem):
+        """Adiciona cada resultado ao histórico de verificações."""
+        self.historico.append(mensagem)
+        self.historico_label.text = "Histórico de verificações:\n" + "\n".join(self.historico[-5:])  # Mostra só os 5 últimos
 
 if __name__ == '__main__':
     VerificadorIdadeApp().run()
